@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import TextEditor from './TextEditor';
+import CollaborativeEditor from './CollaborativeEditor';
 
 function App() {
   const [code, setCode] = useState('// Write your code here');
@@ -7,7 +7,7 @@ function App() {
 
   return (
     <div>
-      <TextEditor
+      <CollaborativeEditor
         code={code}
         theme={theme}
         onCodeChange={setCode} // Update code when changes occur in the editor
