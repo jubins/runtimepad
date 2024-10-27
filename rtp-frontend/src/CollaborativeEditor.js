@@ -1,22 +1,34 @@
 // rtp-frontend/src/CollaborativeEditor.js
 import React, { useEffect, useState } from 'react';
 import { Editor } from '@monaco-editor/react';
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import { FiSettings, FiPlus } from 'react-icons/fi';
 import io from 'socket.io-client';
-import { useAuth } from './AuthProvider';
+import Header from './components/Header';
+import { v4 as uuidv4 } from 'uuid';
 
-const socket = io('http://127.0.0.1:5000');  // Flask backend URL
+const socket = io('http://127.0.0.1:5000'); // Flask backend URL
 
 const CollaborativeEditor = () => {
-  const { padId } = useParams(); // Get the padId from the URL
-  const { user, signOut } = useAuth(); // Use signOut from the context
+  const { padId } = useParams();
   const [code, setCode] = useState('// Start coding!');
-  const [editorTheme, setEditorTheme] = useState('vs-dark'); // Default theme is dark
+  const [editorTheme, setEditorTheme] = useState('vs-dark');
+  const [language, setLanguage] = useState('javascript');
 
-  // Handle user joining a room based on padId
+  useEffect(() => {
+    // Apply global styles to remove any unwanted spacing
+    document.documentElement.style.margin = '0';
+    document.documentElement.style.padding = '0';
+    document.documentElement.style.boxSizing = 'border-box';
+    document.body.style.margin = '0';
+    document.body.style.padding = '0';
+    document.body.style.boxSizing = 'border-box';
+    document.body.style.overflow = 'hidden'; // Disable scroll to make it full-screen
+  }, []);
+
   useEffect(() => {
     if (padId) {
-      socket.emit('join', { room: padId, username: user ? user.email : 'Guest' });
+      socket.emit('join', { room: padId });
 
       socket.on('code-update', (newCode) => {
         setCode(newCode);
@@ -26,7 +38,7 @@ const CollaborativeEditor = () => {
     return () => {
       socket.off('code-update');
     };
-  }, [padId, user]);
+  }, [padId]);
 
   const handleEditorChange = (newValue) => {
     setCode(newValue);
@@ -35,43 +47,81 @@ const CollaborativeEditor = () => {
     }
   };
 
-  // Function to toggle between light and dark themes for the editor
   const toggleEditorTheme = () => {
     setEditorTheme((prevTheme) => (prevTheme === 'vs-dark' ? 'vs-light' : 'vs-dark'));
   };
 
-  return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px', backgroundColor: '#1e1e1e', color: '#ffffff' }}>
-        <h2>RuntimePad Editor</h2>
-        <div>
-          {user ? (
-            <>
-              <p style={{ display: 'inline-block', marginRight: '10px' }}>Welcome, {user.email}</p>
-              <button onClick={signOut} style={{ marginRight: '20px' }}>Sign Out</button>
-            </>
-          ) : (
-            <div>
-              <Link to="/login" style={{ marginRight: '10px', color: '#ffffff' }}>Login</Link>
-            </div>
-          )}
-          {/* Theme toggle button */}
-          <button onClick={toggleEditorTheme} style={{ marginLeft: '20px' }}>
-            Switch to {editorTheme === 'vs-dark' ? 'Light' : 'Dark'} Theme
-          </button>
-        </div>
-      </div>
+  const createNewPad = () => {
+    const newPadId = uuidv4();
+    window.open(`/pad/${newPadId}`, '_blank');
+  };
 
-      {/* Monaco Editor always visible */}
-      <Editor
-        height="90vh"
-        language="javascript"
-        value={code}
-        onChange={handleEditorChange}
-        theme={editorTheme} // Set the Monaco Editor theme here
-      />
+  return (
+    <div style={styles.container}>
+      <Header />
+      <div style={styles.editorWrapper}>
+        {/* Sidebar with settings and add pad icons */}
+        <div style={styles.sidebar}>
+          <div style={styles.iconButton} onClick={toggleEditorTheme}>
+            <FiSettings size={24} title="Settings (Toggle Theme)" />
+          </div>
+          <div style={styles.iconButton} onClick={createNewPad}>
+            <FiPlus size={24} title="Create New Pad" />
+          </div>
+        </div>
+
+        {/* Monaco Editor */}
+        <Editor
+          height="calc(100vh - 50px)" // Make sure to subtract the header height
+          width="calc(100% - 50px)"   // Adjust for the sidebar width
+          language={language}
+          value={code}
+          onChange={handleEditorChange}
+          theme={editorTheme}
+        />
+      </div>
     </div>
   );
+};
+
+const styles = {
+  container: {
+    height: '100vh',
+    width: '100vw',
+    display: 'flex',
+    flexDirection: 'column',
+    margin: '0',
+    padding: '0',
+    overflow: 'hidden',
+    boxSizing: 'border-box',
+    backgroundColor: '#1e1e1e',
+  },
+  editorWrapper: {
+    display: 'flex',
+    flexGrow: 1,
+    position: 'relative',
+    height: '100%',
+    width: '100%',
+  },
+  sidebar: {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    backgroundColor: '#333333',
+    padding: '10px',
+    position: 'absolute',
+    right: '0',
+    top: '0',
+    height: '100%',
+    zIndex: 1000,
+    width: '50px',
+  },
+  iconButton: {
+    cursor: 'pointer',
+    margin: '20px 0',
+    color: '#ffffff',
+  },
 };
 
 export default CollaborativeEditor;
