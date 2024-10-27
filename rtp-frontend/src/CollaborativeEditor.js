@@ -1,20 +1,22 @@
 // rtp-frontend/src/CollaborativeEditor.js
 import React, { useEffect, useState } from 'react';
 import { Editor } from '@monaco-editor/react';
+import { Link, useParams } from 'react-router-dom';
 import io from 'socket.io-client';
 import { useAuth } from './AuthProvider';
 
-const socket = io('http://localhost:5000');  // Flask backend URL
+const socket = io('http://127.0.0.1:5000');  // Flask backend URL
 
 const CollaborativeEditor = () => {
-  const { user, sendSignInEmail } = useAuth();
+  const { padId } = useParams(); // Get the padId from the URL
+  const { user } = useAuth();
   const [code, setCode] = useState('// Start coding!');
-  const [email, setEmail] = useState('');
+  const [editorTheme, setEditorTheme] = useState('vs-dark'); // Default theme is dark
 
+  // Handle user joining a room based on padId
   useEffect(() => {
-    if (user) {
-      const room = "default-room";
-      socket.emit('join', { room, username: user.email });
+    if (padId) {
+      socket.emit('join', { room: padId, username: user ? user.email : 'Guest' });
 
       socket.on('code-update', (newCode) => {
         setCode(newCode);
@@ -24,39 +26,47 @@ const CollaborativeEditor = () => {
     return () => {
       socket.off('code-update');
     };
-  }, [user]);
-
-  if (!user) {
-    return (
-      <div>
-        <p>You must be logged in to use the editor.</p>
-        
-        {/* Email Sign-In Form */}
-        <h3>Sign In with Email Link</h3>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <button onClick={() => sendSignInEmail(email)}>Send Sign-In Link</button>
-      </div>
-    );
-  }
+  }, [padId, user]);
 
   const handleEditorChange = (newValue) => {
     setCode(newValue);
-    const room = "default-room";
-    socket.emit('code-change', { room, code: newValue });
+    if (padId) {
+      socket.emit('code-change', { room: padId, code: newValue });
+    }
+  };
+
+  // Function to toggle between light and dark themes for the editor
+  const toggleEditorTheme = () => {
+    setEditorTheme((prevTheme) => (prevTheme === 'vs-dark' ? 'vs-light' : 'vs-dark'));
   };
 
   return (
     <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px', backgroundColor: '#1e1e1e', color: '#ffffff' }}>
+        <h2>RuntimePad Editor</h2>
+        <div>
+          {user ? (
+            <p>Welcome, {user.email}</p>
+          ) : (
+            <div>
+              <Link to="/login" style={{ marginRight: '10px', color: '#ffffff' }}>Login</Link>
+              <Link to="/signup" style={{ color: '#ffffff' }}>Sign Up</Link>
+            </div>
+          )}
+          {/* Theme toggle button */}
+          <button onClick={toggleEditorTheme} style={{ marginLeft: '20px' }}>
+            Switch to {editorTheme === 'vs-dark' ? 'Light' : 'Dark'} Theme
+          </button>
+        </div>
+      </div>
+
+      {/* Monaco Editor always visible */}
       <Editor
         height="90vh"
         language="javascript"
         value={code}
         onChange={handleEditorChange}
+        theme={editorTheme} // Set the Monaco Editor theme here
       />
     </div>
   );
