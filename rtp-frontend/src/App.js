@@ -1,18 +1,21 @@
-import React, { useState } from 'react';
+// rtp-frontend/src/App.js
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import CollaborativeEditor from './CollaborativeEditor';
+import Login from './Login';
+import SignUp from './SignUp';
+import HomePage from './HomePage';
 
 function App() {
-  const [code, setCode] = useState('// Write your code here');
-  const [theme, setTheme] = useState('vs-dark'); // Example theme
-
   return (
-    <div>
-      <CollaborativeEditor
-        code={code}
-        theme={theme}
-        onCodeChange={setCode} // Update code when changes occur in the editor
-      />
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/pad/:padId" element={<CollaborativeEditor />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<SignUp />} />
+      </Routes>
+    </Router>
   );
 }
 
