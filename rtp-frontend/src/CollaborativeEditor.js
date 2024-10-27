@@ -64,10 +64,10 @@ const CollaborativeEditor = () => {
         <Sidebar
           toggleSettings={toggleSettings}
           createNewPad={createNewPad}
-          hidden={showSettings} // Pass the hidden prop to control visibility
+          hidden={showSettings}
         />
         <Editor
-          height="100vh"
+          height="calc(100vh - 60px)" // Deduct header height
           width={showSettings ? 'calc(100% - 300px)' : '100%'} // Adjust width if settings are open
           language={language}
           value={code}
@@ -105,9 +105,10 @@ const styles = {
     display: 'flex',
     flexGrow: 1,
     position: 'relative',
-    height: '100%',
-    width: '100%', // Full width; sidebar handles visibility
+    height: 'calc(100% - 60px)', // Deduct height for the header
+    width: '100%',
     transition: 'width 0.3s ease', // Smooth transition when resizing
+    marginTop: '60px', // Offset to avoid overlap with header
   }),
 };
 
