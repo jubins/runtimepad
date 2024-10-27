@@ -1,6 +1,12 @@
 // rtp-frontend/src/AuthProvider.js
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink, onAuthStateChanged } from 'firebase/auth';
+import {
+  sendSignInLinkToEmail,
+  isSignInWithEmailLink,
+  signInWithEmailLink,
+  onAuthStateChanged,
+  signOut as firebaseSignOut
+} from 'firebase/auth';
 import { auth } from './firebaseConfig';
 
 const AuthContext = createContext();
@@ -45,8 +51,18 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
+  // Sign out function to log out the user
+  const signOut = async () => {
+    try {
+      await firebaseSignOut(auth);
+      setUser(null);
+    } catch (error) {
+      console.error('Error signing out', error);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, sendSignInEmail }}>
+    <AuthContext.Provider value={{ user, sendSignInEmail, signOut }}>
       {children}
     </AuthContext.Provider>
   );

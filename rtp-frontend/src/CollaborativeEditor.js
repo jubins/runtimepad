@@ -9,7 +9,7 @@ const socket = io('http://127.0.0.1:5000');  // Flask backend URL
 
 const CollaborativeEditor = () => {
   const { padId } = useParams(); // Get the padId from the URL
-  const { user } = useAuth();
+  const { user, signOut } = useAuth(); // Use signOut from the context
   const [code, setCode] = useState('// Start coding!');
   const [editorTheme, setEditorTheme] = useState('vs-dark'); // Default theme is dark
 
@@ -46,11 +46,13 @@ const CollaborativeEditor = () => {
         <h2>RuntimePad Editor</h2>
         <div>
           {user ? (
-            <p>Welcome, {user.email}</p>
+            <>
+              <p style={{ display: 'inline-block', marginRight: '10px' }}>Welcome, {user.email}</p>
+              <button onClick={signOut} style={{ marginRight: '20px' }}>Sign Out</button>
+            </>
           ) : (
             <div>
               <Link to="/login" style={{ marginRight: '10px', color: '#ffffff' }}>Login</Link>
-              <Link to="/signup" style={{ color: '#ffffff' }}>Sign Up</Link>
             </div>
           )}
           {/* Theme toggle button */}
