@@ -3,7 +3,6 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import CollaborativeEditor from './CollaborativeEditor';
 import Login from './Login';
-import SignUp from './SignUp';
 import HomePage from './HomePage';
 
 function App() {
@@ -13,7 +12,6 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/pad/:padId" element={<CollaborativeEditor />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<SignUp />} />
       </Routes>
     </Router>
   );
