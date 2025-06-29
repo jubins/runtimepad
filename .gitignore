@@ -1,0 +1,49 @@
+# Node modules
+node_modules/
+
+# Build output
+.next/
+out/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment variables
+.env
+.env.*.local
+.env.local
+
+# System files
+.DS_Store
+Thumbs.db
+
+# VS Code settings
+.vscode/
+
+# IDEs
+.idea/
+*.sw?
+
+# Optional: OS junk
+*.log
+*.tmp
+*.bak
+
+# Vercel
+.vercel/
+
+# Coverage output
+coverage/
+
+# Lint cache
+.eslintcache
+
+# Optional: testing
+jest.config.js
+*.test.js
+*.spec.js
+*.test.ts
+*.spec.ts

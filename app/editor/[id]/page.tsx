@@ -22,6 +22,12 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { Share2, Save, Users, Clock, Settings, UserPlus, Edit3 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
@@ -247,7 +253,7 @@ export default function CollaborativeEditorPage() {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `${title || 'Collaborative Session'} - Runtimepad`,
+          title: `${title || 'Collaborative Session'} - RuntimePad`,
           text: 'Join me in this collaborative coding session!',
           url: shareUrl,
         });
@@ -295,196 +301,239 @@ export default function CollaborativeEditorPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <Header />
-      
-      <main className="flex-1 py-8">
-        <div className="container max-w-7xl mx-auto px-4">
-          <div className="mb-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold mb-2">Collaborative Editor</h1>
-                <p className="text-muted-foreground">
-                  Real-time collaborative code editing session
-                </p>
-              </div>
-              <div className="flex items-center space-x-4">
-                <Badge variant={connectionStatus === 'connected' ? 'secondary' : 'destructive'}>
-                  <Users className="w-3 h-3 mr-1" />
-                  {connectionStatus === 'connected' ? 'Connected' : 'Disconnected'}
-                </Badge>
-                {lastSaved && (
-                  <Badge variant="outline">
-                    <Clock className="w-3 h-3 mr-1" />
-                    Saved {lastSaved.toLocaleTimeString()}
+    <TooltipProvider>
+      <div className="flex min-h-screen flex-col">
+        <Header />
+        
+        <main className="flex-1 py-8">
+          <div className="container max-w-7xl mx-auto px-4">
+            <div className="mb-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h1 className="text-3xl font-bold mb-2">Collaborative Editor</h1>
+                  <p className="text-muted-foreground">
+                    Real-time collaborative code editing session
+                  </p>
+                </div>
+                <div className="flex items-center space-x-4">
+                  <Badge variant={connectionStatus === 'connected' ? 'secondary' : 'destructive'}>
+                    <Users className="w-3 h-3 mr-1" />
+                    {connectionStatus === 'connected' ? 'Connected' : 'Disconnected'}
                   </Badge>
-                )}
+                  {lastSaved && (
+                    <Badge variant="outline">
+                      <Clock className="w-3 h-3 mr-1" />
+                      Saved {lastSaved.toLocaleTimeString()}
+                    </Badge>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="relative">
-            <Card>
-              {/* Editor Header */}
-              <div className="flex items-center justify-between p-4 border-b">
-                <div className="flex items-center space-x-4">
-                  {/* Editable Title */}
-                  {isEditingTitle ? (
-                    <Input
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                      onBlur={handleTitleSubmit}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          handleTitleSubmit();
-                        }
-                        if (e.key === 'Escape') {
-                          setIsEditingTitle(false);
-                        }
-                      }}
-                      className="text-lg font-semibold border-none p-0 h-auto focus-visible:ring-0"
-                      placeholder="Untitled Session"
-                      autoFocus
-                    />
-                  ) : (
-                    <h2 
-                      className="text-lg font-semibold cursor-pointer hover:text-primary transition-colors flex items-center space-x-2"
-                      onClick={() => setIsEditingTitle(true)}
-                    >
-                      <span>{title || 'Untitled Session'}</span>
-                      <Edit3 className="w-4 h-4 opacity-50" />
-                    </h2>
-                  )}
+            <div className="relative">
+              <Card>
+                {/* Editor Header */}
+                <div className="flex items-center justify-between p-4 border-b">
+                  <div className="flex items-center space-x-4">
+                    {/* Editable Title */}
+                    {isEditingTitle ? (
+                      <Input
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                        onBlur={handleTitleSubmit}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            handleTitleSubmit();
+                          }
+                          if (e.key === 'Escape') {
+                            setIsEditingTitle(false);
+                          }
+                        }}
+                        className="text-lg font-semibold border-none p-0 h-auto focus-visible:ring-0"
+                        placeholder="Untitled Session"
+                        autoFocus
+                      />
+                    ) : (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <h2 
+                            className="text-lg font-semibold cursor-pointer hover:text-primary transition-colors flex items-center space-x-2"
+                            onClick={() => setIsEditingTitle(true)}
+                          >
+                            <span>{title || 'Untitled Session'}</span>
+                            <Edit3 className="w-4 h-4 opacity-50" />
+                          </h2>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Click to edit title</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    )}
 
-                  {/* Active Users */}
-                  <div className="flex items-center space-x-2">
-                    <div className="flex -space-x-2">
-                      {collaborators.slice(0, 3).map((collaborator) => (
-                        <Avatar key={collaborator.id} className="h-8 w-8 border-2 border-background">
-                          <AvatarFallback className={`${collaborator.color} text-white text-xs`}>
-                            {collaborator.name.split(' ').map(n => n[0]).join('')}
-                          </AvatarFallback>
-                        </Avatar>
-                      ))}
-                      {collaborators.length > 3 && (
-                        <div className="h-8 w-8 rounded-full bg-muted border-2 border-background flex items-center justify-center">
-                          <span className="text-xs text-muted-foreground">+{collaborators.length - 3}</span>
-                        </div>
-                      )}
-                    </div>
-                    <Badge variant="outline" className="text-xs">
-                      <UserPlus className="w-3 h-3 mr-1" />
-                      {collaborators.length} active
-                    </Badge>
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex items-center space-x-2">
-                  <Button onClick={handleShare} variant="outline" size="sm" title="Share">
-                    <Share2 className="w-4 h-4" />
-                  </Button>
-                  <Button onClick={handleSaveLocal} variant="outline" size="sm" title="Save">
-                    <Save className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-
-              <div className="flex">
-                {/* Main Editor */}
-                <div className="flex-1">
-                  <CardContent className="p-0">
-                    <MonacoEditor
-                      height="600px"
-                      language={language}
-                      value={code}
-                      onChange={handleCodeChange}
-                      options={{
-                        wordWrap: 'on',
-                        minimap: { enabled: true },
-                      }}
-                    />
-                  </CardContent>
-                </div>
-
-                {/* Collapsible Settings Panel */}
-                <Collapsible open={settingsOpen} onOpenChange={setSettingsOpen}>
-                  <CollapsibleTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="absolute top-4 right-4 z-10 bg-background/80 backdrop-blur-sm border"
-                      title="Settings"
-                    >
-                      <Settings className="w-4 h-4" />
-                    </Button>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="w-80 border-l bg-background/50 backdrop-blur-sm">
-                    <div className="p-6 space-y-6">
-                      <div>
-                        <h3 className="text-sm font-semibold mb-3">Language</h3>
-                        <Select value={language} onValueChange={handleLanguageChange}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select language" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {LANGUAGES.map((lang) => (
-                              <SelectItem key={lang.value} value={lang.value}>
-                                {lang.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div>
-                        <h3 className="text-sm font-semibold mb-3">Active Collaborators</h3>
-                        <div className="space-y-2 max-h-40 overflow-y-auto">
-                          {collaborators.map((collaborator) => (
-                            <div key={collaborator.id} className="flex items-center space-x-3 p-2 rounded-lg bg-muted/50">
-                              <Avatar className="h-6 w-6">
+                    {/* Active Users */}
+                    <div className="flex items-center space-x-2">
+                      <div className="flex -space-x-2">
+                        {collaborators.slice(0, 3).map((collaborator) => (
+                          <Tooltip key={collaborator.id}>
+                            <TooltipTrigger asChild>
+                              <Avatar className="h-8 w-8 border-2 border-background">
                                 <AvatarFallback className={`${collaborator.color} text-white text-xs`}>
                                   {collaborator.name.split(' ').map(n => n[0]).join('')}
                                 </AvatarFallback>
                               </Avatar>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium truncate">
-                                  {collaborator.name}
-                                  {collaborator.id === currentUser?.id && ' (You)'}
-                                </p>
-                                <p className="text-xs text-muted-foreground">
-                                  {collaborator.id === currentUser?.id ? 'Online' : 'Active'}
-                                </p>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{collaborator.name}{collaborator.id === currentUser?.id && ' (You)'}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        ))}
+                        {collaborators.length > 3 && (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="h-8 w-8 rounded-full bg-muted border-2 border-background flex items-center justify-center">
+                                <span className="text-xs text-muted-foreground">+{collaborators.length - 3}</span>
                               </div>
-                            </div>
-                          ))}
-                        </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{collaborators.length - 3} more collaborators</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
                       </div>
-
-                      <div>
-                        <h3 className="text-sm font-semibold mb-2">Session Info</h3>
-                        <div className="text-xs text-muted-foreground font-mono bg-muted p-2 rounded break-all">
-                          {sessionId}
-                        </div>
-                      </div>
+                      <Badge variant="outline" className="text-xs">
+                        <UserPlus className="w-3 h-3 mr-1" />
+                        {collaborators.length} active
+                      </Badge>
                     </div>
-                  </CollapsibleContent>
-                </Collapsible>
-              </div>
-            </Card>
-          </div>
+                  </div>
 
-          {/* Privacy Notice */}
-          <div className="mt-8 p-4 bg-muted/30 rounded-lg border">
-            <p className="text-sm text-muted-foreground text-center">
-              🔒 <strong>Privacy Notice:</strong> Collaborative sessions are stored temporarily for 24 hours to enable real-time collaboration. 
-              No personal information is collected or stored permanently.
-            </p>
-          </div>
-        </div>
-      </main>
+                  {/* Action Buttons */}
+                  <div className="flex items-center space-x-2">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button onClick={handleShare} variant="outline" size="sm">
+                          <Share2 className="w-4 h-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Share session</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button onClick={handleSaveLocal} variant="outline" size="sm">
+                          <Save className="w-4 h-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Save to computer</p>
+                      </TooltipContent>
+                    </Tooltip>
 
-      <Footer />
-    </div>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => setSettingsOpen(!settingsOpen)}
+                        >
+                          <Settings className="w-4 h-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Settings</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                </div>
+
+                <div className="flex">
+                  {/* Collapsible Settings Panel - Left Side */}
+                  <Collapsible open={settingsOpen} onOpenChange={setSettingsOpen}>
+                    <CollapsibleContent className="w-80 border-r bg-background/50 backdrop-blur-sm">
+                      <div className="p-6 space-y-6">
+                        <div>
+                          <h3 className="text-sm font-semibold mb-3">Language</h3>
+                          <Select value={language} onValueChange={handleLanguageChange}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select language" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {LANGUAGES.map((lang) => (
+                                <SelectItem key={lang.value} value={lang.value}>
+                                  {lang.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div>
+                          <h3 className="text-sm font-semibold mb-3">Active Collaborators</h3>
+                          <div className="space-y-2 max-h-40 overflow-y-auto">
+                            {collaborators.map((collaborator) => (
+                              <div key={collaborator.id} className="flex items-center space-x-3 p-2 rounded-lg bg-muted/50">
+                                <Avatar className="h-6 w-6">
+                                  <AvatarFallback className={`${collaborator.color} text-white text-xs`}>
+                                    {collaborator.name.split(' ').map(n => n[0]).join('')}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium truncate">
+                                    {collaborator.name}
+                                    {collaborator.id === currentUser?.id && ' (You)'}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {collaborator.id === currentUser?.id ? 'Online' : 'Active'}
+                                  </p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div>
+                          <h3 className="text-sm font-semibold mb-2">Session Info</h3>
+                          <div className="text-xs text-muted-foreground font-mono bg-muted p-2 rounded break-all">
+                            {sessionId}
+                          </div>
+                        </div>
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+
+                  {/* Main Editor */}
+                  <div className="flex-1">
+                    <CardContent className="p-0">
+                      <MonacoEditor
+                        height="600px"
+                        language={language}
+                        value={code}
+                        onChange={handleCodeChange}
+                        options={{
+                          wordWrap: 'on',
+                          minimap: { enabled: true },
+                        }}
+                      />
+                    </CardContent>
+                  </div>
+                </div>
+              </Card>
+            </div>
+
+            {/* Privacy Notice */}
+            <div className="mt-8 p-4 bg-muted/30 rounded-lg border">
+              <p className="text-sm text-muted-foreground text-center">
+                🔒 <strong>Privacy Notice:</strong> Collaborative sessions are stored temporarily for 24 hours to enable real-time collaboration. 
+                No personal information is collected or stored permanently.
+              </p>
+            </div>
+          </div>
+        </main>
+
+        <Footer />
+      </div>
+    </TooltipProvider>
   );
 }
