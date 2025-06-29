@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { MonacoEditor } from '@/components/editors/monaco-editor';
@@ -154,7 +154,7 @@ export default function CaseConverterPage() {
   const [results, setResults] = useState<{ [key in CaseType]: string }>({} as any);
 
   // Convert text to all cases whenever input changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (input.trim()) {
       const newResults = {} as { [key in CaseType]: string };
       caseConversions.forEach(conversion => {
