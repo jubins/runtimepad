@@ -1,4 +1,4 @@
-// // app/editor/[id]/page.tsx
+// app/editor/[id]/page.tsx
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
@@ -21,7 +21,6 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
   Collapsible,
   CollapsibleContent,
-  CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import {
   Tooltip,
@@ -29,7 +28,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { Share2, Save, Users, Clock, Settings, UserPlus, Edit3, ChevronDown } from 'lucide-react';
+import { Share2, Save, Users, Clock, Settings, UserPlus, Edit3, ChevronDown, X } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 
@@ -183,15 +182,21 @@ export default function CollaborativeEditorPage() {
           },
           (payload) => {
             const newData = payload.new as any;
-            setCode(newData.content);
-            setLanguage(newData.language || 'javascript');
-            setTitle(newData.title || '');
+            // Only update if the content is different to avoid cursor jumping
+            if (newData.content !== code) {
+              setCode(newData.content);
+            }
+            if (newData.language !== language) {
+              setLanguage(newData.language || 'javascript');
+            }
+            if (newData.title !== title) {
+              setTitle(newData.title || '');
+            }
             setLastSaved(new Date(newData.updated_at));
           }
         )
         .on('presence', { event: 'sync' }, () => {
           const newState = channel.presenceState();
-          // Extract user data from presence state, filtering out presence metadata
           const users: CollaboratorInfo[] = [];
           Object.values(newState).forEach((presences: any) => {
             presences.forEach((presence: any) => {
@@ -209,21 +214,24 @@ export default function CollaborativeEditorPage() {
         })
         .on('presence', { event: 'join' }, ({ key, newPresences }) => {
           const newUsers = newPresences as any[];
-          const validUsers = newUsers.filter(u => u.name);
+          const validUsers = newUsers.filter(u => u.name && u.id !== currentUser.id);
           if (validUsers.length > 0) {
-            toast.success(`${validUsers[0].name || 'Someone'} joined the session`);
+            toast.success(`${validUsers[0].name} joined the session`);
           }
         })
         .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
           const leftUsers = leftPresences as any[];
-          const validUsers = leftUsers.filter(u => u.name);
+          const validUsers = leftUsers.filter(u => u.name && u.id !== currentUser.id);
           if (validUsers.length > 0) {
-            toast.info(`${validUsers[0].name || 'Someone'} left the session`);
+            toast.info(`${validUsers[0].name} left the session`);
           }
         })
         .subscribe(async (status) => {
           if (status === 'SUBSCRIBED') {
+            setConnectionStatus('connected');
             await channel.track(currentUser);
+          } else {
+            setConnectionStatus('disconnected');
           }
         });
 
@@ -233,19 +241,22 @@ export default function CollaborativeEditorPage() {
     }
   }, [sessionId, isLoading, currentUser]);
 
-  // Auto-save with debounce
-  useEffect(() => {
-    if (!isLoading) {
-      const timeout = setTimeout(() => {
-        saveSession(code);
-      }, 2000);
+  // Remove auto-save with debounce - we now save immediately on change
+  // useEffect(() => {
+  //   if (!isLoading) {
+  //     const timeout = setTimeout(() => {
+  //       saveSession(code);
+  //     }, 2000);
 
-      return () => clearTimeout(timeout);
-    }
-  }, [code, saveSession, isLoading]);
+  //     return () => clearTimeout(timeout);
+  //   }
+  // }, [code, saveSession, isLoading]);
 
   const handleCodeChange = (value: string | undefined) => {
-    setCode(value || '');
+    const newCode = value || '';
+    setCode(newCode);
+    // Immediately save to trigger real-time sync
+    saveSession(newCode);
   };
 
   const handleLanguageChange = (newLanguage: string) => {
@@ -451,56 +462,121 @@ export default function CollaborativeEditorPage() {
                       </TooltipContent>
                     </Tooltip>
 
-                    {/* Settings Dropdown */}
-                    <Collapsible open={settingsOpen} onOpenChange={setSettingsOpen}>
-                      <CollapsibleTrigger asChild>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button variant="outline" size="sm">
-                              <Settings className="w-4 h-4" />
-                              <ChevronDown className={`w-3 h-3 ml-1 transition-transform ${settingsOpen ? 'rotate-180' : ''}`} />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Settings</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </CollapsibleTrigger>
-                    </Collapsible>
+                    {/* Settings Button */}
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => setSettingsOpen(!settingsOpen)}
+                        >
+                          <Settings className="w-4 h-4" />
+                          <ChevronDown className={`w-3 h-3 ml-1 transition-transform ${settingsOpen ? 'rotate-180' : ''}`} />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Settings</p>
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
                 </div>
 
-                {/* Settings Dropdown Content */}
-                <Collapsible open={settingsOpen} onOpenChange={setSettingsOpen}>
-                  <CollapsibleContent>
-                    <div className="border-b bg-muted/30 p-4">
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div className="flex items-center space-x-3">
-                          <span className="text-sm font-medium">Language:</span>
-                          <Select value={language} onValueChange={handleLanguageChange}>
-                            <SelectTrigger className="w-40">
-                              <SelectValue placeholder="Select language" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {LANGUAGES.map((lang) => (
-                                <SelectItem key={lang.value} value={lang.value}>
-                                  {lang.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                {/* Settings Side Panel Overlay */}
+                {settingsOpen && (
+                  <div className="absolute inset-0 z-50 flex">
+                    {/* Backdrop */}
+                    <div 
+                      className="absolute inset-0 bg-black/20 backdrop-blur-sm" 
+                      onClick={() => setSettingsOpen(false)}
+                    />
+                    
+                    {/* Side Panel */}
+                    <div className="relative w-96 bg-background border-r shadow-lg ml-auto">
+                      <div className="p-6 space-y-6 h-full overflow-y-auto">
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-lg font-semibold">Session Settings</h3>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => setSettingsOpen(false)}
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
                         </div>
                         
-                        <div className="flex items-center space-x-3">
-                          <span className="text-sm font-medium">Session ID:</span>
-                          <code className="text-xs bg-muted px-2 py-1 rounded font-mono">
-                            {sessionId.slice(0, 8)}...
-                          </code>
+                        <div className="space-y-6">
+                          <div>
+                            <label className="text-sm font-medium mb-2 block">Language</label>
+                            <Select value={language} onValueChange={handleLanguageChange}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select language" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {LANGUAGES.map((lang) => (
+                                  <SelectItem key={lang.value} value={lang.value}>
+                                    {lang.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          
+                          <div>
+                            <label className="text-sm font-medium mb-2 block">Session Info</label>
+                            <div className="space-y-3">
+                              <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                                <span className="text-sm">Session ID</span>
+                                <code className="text-xs bg-background px-2 py-1 rounded font-mono">
+                                  {sessionId.slice(0, 8)}...
+                                </code>
+                              </div>
+                              
+                              <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                                <span className="text-sm">Connection</span>
+                                <Badge variant={connectionStatus === 'connected' ? 'secondary' : 'destructive'} className="text-xs">
+                                  {connectionStatus === 'connected' ? 'Connected' : 'Disconnected'}
+                                </Badge>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="text-sm font-medium mb-2 block">Active Collaborators ({collaborators.length})</label>
+                            <div className="space-y-2">
+                              {collaborators.map((collaborator) => (
+                                <div key={collaborator.id} className="flex items-center space-x-3 p-2 bg-muted/50 rounded-lg">
+                                  <Avatar className="h-6 w-6">
+                                    <AvatarFallback className={`${collaborator.color} text-white text-xs`}>
+                                      {collaborator.name.split(' ').map(n => n[0]).join('')}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <span className="text-sm">
+                                    {collaborator.name}
+                                    {collaborator.id === currentUser?.id && ' (You)'}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="text-sm font-medium mb-2 block">Real-time Sync</label>
+                            <div className="p-3 bg-muted/50 rounded-lg">
+                              <p className="text-sm text-muted-foreground">
+                                Changes are synchronized instantly across all participants. 
+                                {lastSaved && (
+                                  <span className="block mt-1 text-xs">
+                                    Last saved: {lastSaved.toLocaleTimeString()}
+                                  </span>
+                                )}
+                              </p>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </CollapsibleContent>
-                </Collapsible>
+                  </div>
+                )}
 
                 {/* Main Editor */}
                 <CardContent className="p-0">

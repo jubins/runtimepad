@@ -1,4 +1,4 @@
-// // app/editor/page.tsx
+// app/editor/page.tsx
 "use client";
 
 import { useState } from 'react';
@@ -27,7 +27,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { Share2, Save, Plus, Settings, Edit3 } from 'lucide-react';
+import { Share2, Save, Plus, Settings, Edit3, X, ChevronDown } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from 'sonner';
 
@@ -192,6 +192,7 @@ export default function EditorPage() {
                           onClick={() => setSettingsOpen(!settingsOpen)}
                         >
                           <Settings className="w-4 h-4" />
+                          <ChevronDown className={`w-3 h-3 ml-1 transition-transform ${settingsOpen ? 'rotate-180' : ''}`} />
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>
@@ -201,53 +202,82 @@ export default function EditorPage() {
                   </div>
                 </div>
 
-                <div className="flex">
-                  {/* Collapsible Settings Panel - Left Side */}
-                  <Collapsible open={settingsOpen} onOpenChange={setSettingsOpen}>
-                    <CollapsibleContent className="w-80 border-r bg-background/50 backdrop-blur-sm">
-                      <div className="p-6 space-y-6">
-                        <div>
-                          <h3 className="text-sm font-semibold mb-3">Language</h3>
-                          <Select value={language} onValueChange={setLanguage}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select language" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {LANGUAGES.map((lang) => (
-                                <SelectItem key={lang.value} value={lang.value}>
-                                  {lang.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                {/* Settings Side Panel Overlay */}
+                {settingsOpen && (
+                  <div className="absolute inset-0 z-50 flex">
+                    {/* Backdrop */}
+                    <div 
+                      className="absolute inset-0 bg-black/20 backdrop-blur-sm" 
+                      onClick={() => setSettingsOpen(false)}
+                    />
+                    
+                    {/* Side Panel */}
+                    <div className="relative w-80 bg-background border-r shadow-lg ml-auto">
+                      <div className="p-6 space-y-6 h-full overflow-y-auto">
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-lg font-semibold">Editor Settings</h3>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => setSettingsOpen(false)}
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
                         </div>
+                        
+                        <div className="space-y-4">
+                          <div>
+                            <label className="text-sm font-medium mb-2 block">Language</label>
+                            <Select value={language} onValueChange={setLanguage}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select language" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {LANGUAGES.map((lang) => (
+                                  <SelectItem key={lang.value} value={lang.value}>
+                                    {lang.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
 
-                        <div>
-                          <h3 className="text-sm font-semibold mb-3">Editor Options</h3>
-                          <p className="text-sm text-muted-foreground">
-                            This is a single-user editor. Create a collaborative session to work with others in real-time.
-                          </p>
+                          <div>
+                            <label className="text-sm font-medium mb-2 block">Editor Mode</label>
+                            <div className="p-3 bg-muted/50 rounded-lg">
+                              <p className="text-sm text-muted-foreground">
+                                Single-user editor
+                              </p>
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="text-sm font-medium mb-2 block">Editor Options</label>
+                            <div className="p-3 bg-muted/50 rounded-lg">
+                              <p className="text-sm text-muted-foreground">
+                                This is a single-user editor. Create a collaborative session to work with others in real-time.
+                              </p>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    </CollapsibleContent>
-                  </Collapsible>
-
-                  {/* Main Editor */}
-                  <div className="flex-1">
-                    <CardContent className="p-0">
-                      <MonacoEditor
-                        height="600px"
-                        language={language}
-                        value={code}
-                        onChange={(value) => setCode(value || '')}
-                        options={{
-                          wordWrap: 'on',
-                          minimap: { enabled: true },
-                        }}
-                      />
-                    </CardContent>
+                    </div>
                   </div>
-                </div>
+                )}
+
+                {/* Main Editor */}
+                <CardContent className="p-0">
+                  <MonacoEditor
+                    height="600px"
+                    language={language}
+                    value={code}
+                    onChange={(value) => setCode(value || '')}
+                    options={{
+                      wordWrap: 'on',
+                      minimap: { enabled: true },
+                    }}
+                  />
+                </CardContent>
               </Card>
             </div>
 
