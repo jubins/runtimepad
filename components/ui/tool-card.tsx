@@ -10,7 +10,7 @@ interface ToolCardProps {
   title: string;
   description: string;
   href: string;
-  icon: LucideIcon;
+  icon: typeof LucideIcon;
   gradient: string;
 }
 

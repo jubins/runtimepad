@@ -28,7 +28,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { Share2, Save, Users, Clock, Settings, UserPlus, Edit3 } from 'lucide-react';
+import { Share2, Save, Users, Clock, Settings, UserPlus, Edit3, ChevronDown } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 
@@ -190,16 +190,35 @@ export default function CollaborativeEditorPage() {
         )
         .on('presence', { event: 'sync' }, () => {
           const newState = channel.presenceState();
-          const users = Object.values(newState).flat() as CollaboratorInfo[];
+          // Extract user data from presence state, filtering out presence metadata
+          const users: CollaboratorInfo[] = [];
+          Object.values(newState).forEach((presences: any) => {
+            presences.forEach((presence: any) => {
+              if (presence.id && presence.name && presence.color) {
+                users.push({
+                  id: presence.id,
+                  name: presence.name,
+                  color: presence.color,
+                  lastSeen: new Date(presence.lastSeen || Date.now())
+                });
+              }
+            });
+          });
           setCollaborators([currentUser, ...users.filter(u => u.id !== currentUser.id)]);
         })
         .on('presence', { event: 'join' }, ({ key, newPresences }) => {
-          const newUsers = newPresences as CollaboratorInfo[];
-          toast.success(`${newUsers[0]?.name || 'Someone'} joined the session`);
+          const newUsers = newPresences as any[];
+          const validUsers = newUsers.filter(u => u.name);
+          if (validUsers.length > 0) {
+            toast.success(`${validUsers[0].name || 'Someone'} joined the session`);
+          }
         })
         .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
-          const leftUsers = leftPresences as CollaboratorInfo[];
-          toast.info(`${leftUsers[0]?.name || 'Someone'} left the session`);
+          const leftUsers = leftPresences as any[];
+          const validUsers = leftUsers.filter(u => u.name);
+          if (validUsers.length > 0) {
+            toast.info(`${validUsers[0].name || 'Someone'} left the session`);
+          }
         })
         .subscribe(async (status) => {
           if (status === 'SUBSCRIBED') {
@@ -431,32 +450,34 @@ export default function CollaborativeEditorPage() {
                       </TooltipContent>
                     </Tooltip>
 
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => setSettingsOpen(!settingsOpen)}
-                        >
-                          <Settings className="w-4 h-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Settings</p>
-                      </TooltipContent>
-                    </Tooltip>
+                    {/* Settings Dropdown */}
+                    <Collapsible open={settingsOpen} onOpenChange={setSettingsOpen}>
+                      <CollapsibleTrigger asChild>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="outline" size="sm">
+                              <Settings className="w-4 h-4" />
+                              <ChevronDown className={`w-3 h-3 ml-1 transition-transform ${settingsOpen ? 'rotate-180' : ''}`} />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Settings</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </CollapsibleTrigger>
+                    </Collapsible>
                   </div>
                 </div>
 
-                <div className="flex">
-                  {/* Collapsible Settings Panel - Left Side */}
-                  <Collapsible open={settingsOpen} onOpenChange={setSettingsOpen}>
-                    <CollapsibleContent className="w-80 border-r bg-background/50 backdrop-blur-sm">
-                      <div className="p-6 space-y-6">
-                        <div>
-                          <h3 className="text-sm font-semibold mb-3">Language</h3>
+                {/* Settings Dropdown Content */}
+                <Collapsible open={settingsOpen} onOpenChange={setSettingsOpen}>
+                  <CollapsibleContent>
+                    <div className="border-b bg-muted/30 p-4">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div className="flex items-center space-x-3">
+                          <span className="text-sm font-medium">Language:</span>
                           <Select value={language} onValueChange={handleLanguageChange}>
-                            <SelectTrigger>
+                            <SelectTrigger className="w-40">
                               <SelectValue placeholder="Select language" />
                             </SelectTrigger>
                             <SelectContent>
@@ -468,57 +489,31 @@ export default function CollaborativeEditorPage() {
                             </SelectContent>
                           </Select>
                         </div>
-
-                        <div>
-                          <h3 className="text-sm font-semibold mb-3">Active Collaborators</h3>
-                          <div className="space-y-2 max-h-40 overflow-y-auto">
-                            {collaborators.map((collaborator) => (
-                              <div key={collaborator.id} className="flex items-center space-x-3 p-2 rounded-lg bg-muted/50">
-                                <Avatar className="h-6 w-6">
-                                  <AvatarFallback className={`${collaborator.color} text-white text-xs`}>
-                                    {collaborator.name.split(' ').map(n => n[0]).join('')}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-medium truncate">
-                                    {collaborator.name}
-                                    {collaborator.id === currentUser?.id && ' (You)'}
-                                  </p>
-                                  <p className="text-xs text-muted-foreground">
-                                    {collaborator.id === currentUser?.id ? 'Online' : 'Active'}
-                                  </p>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div>
-                          <h3 className="text-sm font-semibold mb-2">Session Info</h3>
-                          <div className="text-xs text-muted-foreground font-mono bg-muted p-2 rounded break-all">
-                            {sessionId}
-                          </div>
+                        
+                        <div className="flex items-center space-x-3">
+                          <span className="text-sm font-medium">Session ID:</span>
+                          <code className="text-xs bg-muted px-2 py-1 rounded font-mono">
+                            {sessionId.slice(0, 8)}...
+                          </code>
                         </div>
                       </div>
-                    </CollapsibleContent>
-                  </Collapsible>
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
 
-                  {/* Main Editor */}
-                  <div className="flex-1">
-                    <CardContent className="p-0">
-                      <MonacoEditor
-                        height="600px"
-                        language={language}
-                        value={code}
-                        onChange={handleCodeChange}
-                        options={{
-                          wordWrap: 'on',
-                          minimap: { enabled: true },
-                        }}
-                      />
-                    </CardContent>
-                  </div>
-                </div>
+                {/* Main Editor */}
+                <CardContent className="p-0">
+                  <MonacoEditor
+                    height="600px"
+                    language={language}
+                    value={code}
+                    onChange={handleCodeChange}
+                    options={{
+                      wordWrap: 'on',
+                      minimap: { enabled: true },
+                    }}
+                  />
+                </CardContent>
               </Card>
             </div>
 
