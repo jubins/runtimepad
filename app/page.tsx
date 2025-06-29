@@ -8,6 +8,7 @@ import { ToolCard } from '@/components/ui/tool-card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
+import { Analytics } from "@vercel/analytics/next"
 
 const tools = [
   {
@@ -314,6 +315,7 @@ export default function HomePage() {
       </main>
 
       <Footer />
+      <Analytics />
     </div>
   );
 }
