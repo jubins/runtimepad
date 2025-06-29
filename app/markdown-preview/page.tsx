@@ -218,46 +218,8 @@ export default function MarkdownPreviewPage() {
                 <span>Preview</span>
               </TabsTrigger>
             </TabsList>
-          </Tabs>
 
-          <TabsContent value="edit" className="mt-0">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  Markdown Editor
-                  <div className="flex items-center space-x-2">
-                    <Button variant="outline" size="sm" onClick={handleCopyMarkdown}>
-                      <Copy className="w-4 h-4 mr-1" />
-                      Copy
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={handleDownloadMarkdown}>
-                      <Download className="w-4 h-4 mr-1" />
-                      Download
-                    </Button>
-                  </div>
-                </CardTitle>
-                <CardDescription>
-                  Write your markdown content here. Use the preview tab to see the rendered output.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-0">
-                <MonacoEditor
-                  height="600px"
-                  language="markdown"
-                  value={markdown}
-                  onChange={(value) => setMarkdown(value || '')}
-                  className="border-t"
-                  options={{
-                    wordWrap: 'on',
-                    minimap: { enabled: false },
-                  }}
-                />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="split" className="mt-0">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <TabsContent value="edit" className="mt-6">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
@@ -273,6 +235,9 @@ export default function MarkdownPreviewPage() {
                       </Button>
                     </div>
                   </CardTitle>
+                  <CardDescription>
+                    Write your markdown content here. Use the preview tab to see the rendered output.
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="p-0">
                   <MonacoEditor
@@ -288,7 +253,72 @@ export default function MarkdownPreviewPage() {
                   />
                 </CardContent>
               </Card>
+            </TabsContent>
 
+            <TabsContent value="split" className="mt-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                      Markdown Editor
+                      <div className="flex items-center space-x-2">
+                        <Button variant="outline" size="sm" onClick={handleCopyMarkdown}>
+                          <Copy className="w-4 h-4 mr-1" />
+                          Copy
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={handleDownloadMarkdown}>
+                          <Download className="w-4 h-4 mr-1" />
+                          Download
+                        </Button>
+                      </div>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    <MonacoEditor
+                      height="600px"
+                      language="markdown"
+                      value={markdown}
+                      onChange={(value) => setMarkdown(value || '')}
+                      className="border-t"
+                      options={{
+                        wordWrap: 'on',
+                        minimap: { enabled: false },
+                      }}
+                    />
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                      HTML Preview
+                      <div className="flex items-center space-x-2">
+                        <Button variant="outline" size="sm" onClick={handleCopyHtml}>
+                          <Copy className="w-4 h-4 mr-1" />
+                          Copy HTML
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={handleDownloadHtml}>
+                          <Download className="w-4 h-4 mr-1" />
+                          Download HTML
+                        </Button>
+                      </div>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-6 border-t">
+                    <div 
+                      className="prose prose-sm max-w-none dark:prose-invert"
+                      dangerouslySetInnerHTML={{ __html: html }}
+                      style={{
+                        minHeight: '500px',
+                        lineHeight: '1.6',
+                      }}
+                    />
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="preview" className="mt-6">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
@@ -304,6 +334,9 @@ export default function MarkdownPreviewPage() {
                       </Button>
                     </div>
                   </CardTitle>
+                  <CardDescription>
+                    Live preview of your markdown rendered as HTML.
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="p-6 border-t">
                   <div 
@@ -316,41 +349,8 @@ export default function MarkdownPreviewPage() {
                   />
                 </CardContent>
               </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="preview" className="mt-0">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  HTML Preview
-                  <div className="flex items-center space-x-2">
-                    <Button variant="outline" size="sm" onClick={handleCopyHtml}>
-                      <Copy className="w-4 h-4 mr-1" />
-                      Copy HTML
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={handleDownloadHtml}>
-                      <Download className="w-4 h-4 mr-1" />
-                      Download HTML
-                    </Button>
-                  </div>
-                </CardTitle>
-                <CardDescription>
-                  Live preview of your markdown rendered as HTML.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-6 border-t">
-                <div 
-                  className="prose prose-sm max-w-none dark:prose-invert"
-                  dangerouslySetInnerHTML={{ __html: html }}
-                  style={{
-                    minHeight: '500px',
-                    lineHeight: '1.6',
-                  }}
-                />
-              </CardContent>
-            </Card>
-          </TabsContent>
+            </TabsContent>
+          </Tabs>
 
           {/* Privacy Notice */}
           <div className="mt-8 p-4 bg-muted/30 rounded-lg border">
