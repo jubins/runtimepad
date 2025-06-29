@@ -1,14 +1,13 @@
 "use client";
 
 import { motion } from 'framer-motion';
-import { ArrowRight, FileText, GitCompare, Sparkles, Zap, Shield, Users, Code } from 'lucide-react';
+import { ArrowRight, FileText, GitCompare, Sparkles, Zap, Shield, Users, Code, Lock, Search, Hash, Clock, Type, Palette, ShieldOff } from 'lucide-react';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { ToolCard } from '@/components/ui/tool-card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Analytics } from "@vercel/analytics/next"
 
 const tools = [
   {
@@ -31,6 +30,62 @@ const tools = [
     href: '/editor',
     icon: Code,
     gradient: 'from-emerald-500 to-teal-500',
+  },
+  {
+    title: 'Base64 Encoder/Decoder',
+    description: 'Encode text to Base64 or decode Base64 back to readable text with real-time validation.',
+    href: '/base64',
+    icon: Lock,
+    gradient: 'from-orange-500 to-red-500',
+  },
+  {
+    title: 'Markdown Previewer',
+    description: 'Write markdown and see the HTML preview in real-time with export options.',
+    href: '/markdown-preview',
+    icon: FileText,
+    gradient: 'from-indigo-500 to-purple-500',
+  },
+  {
+    title: 'Regex Tester',
+    description: 'Test regular expressions against sample text with detailed match results and examples.',
+    href: '/regex-tester',
+    icon: Search,
+    gradient: 'from-green-500 to-emerald-500',
+  },
+  {
+    title: 'UUID Generator',
+    description: 'Generate RFC 4122 compliant UUID v4 identifiers with bulk generation options.',
+    href: '/uuid-generator',
+    icon: Hash,
+    gradient: 'from-yellow-500 to-orange-500',
+  },
+  {
+    title: 'Timestamp Converter',
+    description: 'Convert between UNIX timestamps and human-readable dates with multiple time units.',
+    href: '/timestamp-converter',
+    icon: Clock,
+    gradient: 'from-pink-500 to-rose-500',
+  },
+  {
+    title: 'Case Converter',
+    description: 'Transform text between camelCase, snake_case, kebab-case, and other formats.',
+    href: '/case-converter',
+    icon: Type,
+    gradient: 'from-cyan-500 to-blue-500',
+  },
+  {
+    title: 'Color Picker',
+    description: 'Pick colors and convert between HEX, RGB, HSL, HSV, and CMYK formats.',
+    href: '/color-picker',
+    icon: Palette,
+    gradient: 'from-violet-500 to-purple-500',
+  },
+  {
+    title: 'HTML Escape/Unescape',
+    description: 'Escape HTML entities for security or unescape them back to readable characters.',
+    href: '/html-escape',
+    icon: ShieldOff,
+    gradient: 'from-teal-500 to-cyan-500',
   },
 ];
 
@@ -250,7 +305,7 @@ export default function HomePage() {
 
         {/* Tools Section */}
         <section id="tools" className="relative py-24 px-4">
-          <div className="container max-w-6xl mx-auto">
+          <div className="container max-w-7xl mx-auto">
             <motion.div
               variants={containerVariants}
               initial="hidden"
@@ -315,7 +370,6 @@ export default function HomePage() {
       </main>
 
       <Footer />
-      <Analytics />
     </div>
   );
 }
