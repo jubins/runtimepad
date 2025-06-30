@@ -39,8 +39,8 @@ const htmlEntitiesReverse: { [key: string]: string } = {
   '&hellip;': '…',
   '&mdash;': '—',
   '&ndash;': '–',
-  '&lsquo;': ''',
-  '&rsquo;': ''',
+  '&lsquo;': '‘',
+  '&rsquo;': '’',
   '&ldquo;': '"',
   '&rdquo;': '"'
 };
