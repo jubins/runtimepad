@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useTheme } from 'next-themes';
 import { Moon, Sun, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { usePathname } from 'next/navigation';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,6 +15,7 @@ import Image from 'next/image';
 
 export function Header() {
   const { theme, setTheme } = useTheme();
+  const pathname = usePathname();
 
   const toggleTheme = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
@@ -88,6 +90,24 @@ export function Header() {
         </div>
         
         <div className="flex flex-1 items-center justify-end space-x-2">
+          {/* Bolt.new Badge */}
+          {pathname !== '/' && (
+            <Link 
+              href="https://bolt.new/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="hidden sm:block"
+            >
+              <Image
+                src="https://huggingface.co/datasets/jubinsoni/runtimepad/resolve/main/white_circle_360x360.png"
+                alt="Built with Bolt.new"
+                width={32}
+                height={32}
+                className="h-8 w-8 hover:scale-110 transition-transform duration-200"
+              />
+            </Link>
+          )}
+
           {/* Mobile Menu */}
           <div className="lg:hidden">
             <DropdownMenu>

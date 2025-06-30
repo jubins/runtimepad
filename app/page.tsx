@@ -243,13 +243,6 @@ export default function HomePage() {
                 <Button asChild variant="outline" size="lg" className="text-lg px-8 py-6 border-2 hover:bg-muted/50 transition-all duration-300">
                   <Link href="/editor">
                     Start Coding
-                    <Image 
-                      src="https://huggingface.co/datasets/jubinsoni/runtimepad/resolve/main/favicon.svg" 
-                      alt="Code" 
-                      width={20} 
-                      height={20} 
-                      className="ml-2 h-5 w-5"
-                    />
                   </Link>
                 </Button>
               </motion.div>
@@ -368,8 +361,22 @@ export default function HomePage() {
           </div>
         </section>
       </main>
-
       <Footer />
+      {/* Floating Bolt Badge */}
+      <Link 
+        href="https://bolt.new/" 
+        target="_blank" 
+        rel="noopener noreferrer"
+        style={{ position: 'fixed', top: '1rem', right: '10rem', zIndex: 50 }}
+      >
+        <Image 
+          src="https://huggingface.co/datasets/jubinsoni/runtimepad/resolve/main/white_circle_360x360.png"
+          alt="Bolt Badge"
+          width={70}
+          height={70}
+          className="w-12 h-12 md:w-16 md:h-16 object-contain hover:scale-105 transition-transform duration-300"
+        />
+      </Link>
     </div>
   );
 }
