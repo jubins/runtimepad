@@ -1,3 +1,5 @@
+"use client";
+
 import Link from 'next/link';
 import Image from 'next/image';
 import { Github, Heart } from 'lucide-react';
@@ -6,7 +8,7 @@ export function Footer() {
   return (
     <footer className="border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container max-w-7xl mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
           {/* Brand */}
           <div className="space-y-6">
             <div className="flex items-center space-x-3">
@@ -34,9 +36,9 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Tools */}
+          {/* Core Tools */}
           <div className="space-y-6">
-            <h4 className="font-semibold text-foreground">Developer Tools</h4>
+            <h4 className="font-semibold text-foreground">Core Tools</h4>
             <ul className="space-y-3">
               <li>
                 <Link 
@@ -63,7 +65,75 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <span className="text-muted-foreground/60 text-sm">More tools coming soon...</span>
+                <Link 
+                  href="/base64" 
+                  className="text-muted-foreground hover:text-foreground transition-colors text-sm"
+                >
+                  Base64 Encoder/Decoder
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Utility Tools */}
+          <div className="space-y-6">
+            <h4 className="font-semibold text-foreground">Utility Tools</h4>
+            <ul className="space-y-3">
+              <li>
+                <Link 
+                  href="/markdown-preview" 
+                  className="text-muted-foreground hover:text-foreground transition-colors text-sm"
+                >
+                  Markdown Previewer
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  href="/regex-tester" 
+                  className="text-muted-foreground hover:text-foreground transition-colors text-sm"
+                >
+                  Regex Tester
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  href="/uuid-generator" 
+                  className="text-muted-foreground hover:text-foreground transition-colors text-sm"
+                >
+                  UUID Generator
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  href="/timestamp-converter" 
+                  className="text-muted-foreground hover:text-foreground transition-colors text-sm"
+                >
+                  Timestamp Converter
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  href="/case-converter" 
+                  className="text-muted-foreground hover:text-foreground transition-colors text-sm"
+                >
+                  Case Converter
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  href="/color-picker" 
+                  className="text-muted-foreground hover:text-foreground transition-colors text-sm"
+                >
+                  Color Picker
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  href="/html-escape" 
+                  className="text-muted-foreground hover:text-foreground transition-colors text-sm"
+                >
+                  HTML Escape/Unescape
+                </Link>
               </li>
             </ul>
           </div>
